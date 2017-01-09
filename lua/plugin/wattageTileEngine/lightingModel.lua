@@ -263,6 +263,10 @@ LightingModel.new = function(params)
         end
     end
 
+    function self.setUseTransitioners(v)
+        useTransitioners = v
+    end
+
     -- Will result in all aggregate tiles affected by light as dirty and set the ambientLightChanged flag to true
     function self.setAmbientLight(red, green, blue, intensity)
         if ambientRed ~= red

@@ -27,12 +27,17 @@ local ENVIRONMENT = {
 }
 local ROW_COUNT = #ENVIRONMENT
 local COLUMN_COUNT = #ENVIRONMENT[1]
-local SCALING_DELTA = 0.01
-local WALL_LEVELS = 1
+local SCALING_DELTA = 0.015
+local WALL_LEVELS = 3
 
 local tileEngine
+local lightingModel
 local tileEngineViewControl
 local lastTime = 0
+local redLightId
+local greenLightId
+local blueLightId
+local offWhiteLightId
 local tokenLightId
 
 local spriteSheetInfo = require "tiles"
@@ -48,6 +53,152 @@ spriteResolver.resolveForKey = function(key)
         width = frame.width,
         height = frame.height
     })
+end
+
+local stateMachine = {}
+stateMachine.redLight = false
+stateMachine.greenLight = false
+stateMachine.blueLight = false
+stateMachine.offWhiteLight = false
+stateMachine.tokenLight = false
+stateMachine.useTransitioners = false
+stateMachine.setStateBasedOnXAxisPosition = function(posX)
+    if posX >= 175 then
+        stateMachine.redLight = false
+        stateMachine.greenLight = false
+        stateMachine.blueLight = false
+        stateMachine.offWhiteLight = false
+        stateMachine.tokenLight = false
+        stateMachine.useTransitioners = true
+        return
+    end
+
+    if posX >= 130 then
+        stateMachine.redLight = false
+        stateMachine.greenLight = false
+        stateMachine.blueLight = false
+        stateMachine.offWhiteLight = false
+        stateMachine.tokenLight = true
+        stateMachine.useTransitioners = true
+        return
+    end
+
+    if posX >= 120 then
+        stateMachine.redLight = false
+        stateMachine.greenLight = false
+        stateMachine.blueLight = false
+        stateMachine.offWhiteLight = false
+        stateMachine.tokenLight = false
+        stateMachine.useTransitioners = false
+        return
+    end
+
+    if posX >= 85 then
+        stateMachine.redLight = true
+        stateMachine.greenLight = true
+        stateMachine.blueLight = true
+        stateMachine.offWhiteLight = true
+        stateMachine.tokenLight = false
+        stateMachine.useTransitioners = false
+        return
+    end
+
+    if posX >= 75 then
+        stateMachine.redLight = true
+        stateMachine.greenLight = true
+        stateMachine.blueLight = true
+        stateMachine.offWhiteLight = false
+        stateMachine.tokenLight = false
+        stateMachine.useTransitioners = false
+        return
+    end
+
+    if posX >= 65 then
+        stateMachine.redLight = true
+        stateMachine.greenLight = true
+        stateMachine.blueLight = false
+        stateMachine.offWhiteLight = false
+        stateMachine.tokenLight = false
+        stateMachine.useTransitioners = false
+        return
+    end
+
+    if posX >= 55 then
+        stateMachine.redLight = true
+        stateMachine.greenLight = false
+        stateMachine.blueLight = false
+        stateMachine.offWhiteLight = false
+        stateMachine.tokenLight = false
+        stateMachine.useTransitioners = false
+        return
+    end
+
+    stateMachine.redLight = false
+    stateMachine.greenLight = false
+    stateMachine.blueLight = false
+    stateMachine.offWhiteLight = false
+    stateMachine.tokenLight = false
+    stateMachine.useTransitioners = false
+end
+stateMachine.syncWithLights = function()
+    -- Remove lights that have been switched off
+    if not stateMachine.redLight and redLightId ~= nil then
+        lightingModel.removeLight(redLightId)
+        redLightId = nil
+    end
+
+    if not stateMachine.greenLight and greenLightId ~= nil then
+        lightingModel.removeLight(greenLightId)
+        greenLightId = nil
+    end
+
+    if not stateMachine.blueLight and blueLightId ~= nil then
+        lightingModel.removeLight(blueLightId)
+        blueLightId = nil
+    end
+
+    if not stateMachine.offWhiteLight and offWhiteLightId ~= nil then
+        lightingModel.removeLight(offWhiteLightId)
+        offWhiteLightId = nil
+    end
+
+    if not stateMachine.tokenLight and tokenLightId ~= nil then
+        lightingModel.removeLight(tokenLightId)
+        tokenLightId = nil
+    end
+
+    -- Add lights that have been switched on
+    if stateMachine.redLight and redLightId == nil then
+        redLightId = lightingModel.addLight({
+            row=8,column=58,r=1,g=0,b=0,intensity=1,radius=15
+        })
+    end
+
+    if stateMachine.greenLight and greenLightId == nil then
+        greenLightId = lightingModel.addLight({
+            row=8,column=66,r=0,g=1,b=0,intensity=1,radius=15
+        })
+    end
+
+    if stateMachine.blueLight and blueLightId == nil then
+        blueLightId = lightingModel.addLight({
+            row=8,column=74,r=0,g=0,b=1,intensity=1,radius=15
+        })
+    end
+
+    if stateMachine.offWhiteLight and offWhiteLightId == nil then
+        offWhiteLightId = lightingModel.addLight({
+            row=10,column=97,r=1,g=1,b=0.5,intensity=1,radius=20
+        })
+    end
+
+    if stateMachine.tokenLight and tokenLightId == nil then
+        tokenLightId = lightingModel.addLight({
+            row=8,column=26,r=1,g=1,b=1,intensity=0.45,radius=15
+        })
+    end
+
+    lightingModel.setUseTransitioners(stateMachine.useTransitioners)
 end
 
 local function addFloorToLayer(layer)
@@ -110,24 +261,32 @@ local function onFrame(event)
 
     if lastTime ~= 0 then
         local deltaTime = event.time - lastTime
+        lastTime = event.time
         local translation = 5 * deltaTime / 1000
         local x = camera.getX()
-        camera.setLocation(x + translation, 7.5)
-        lightingModel.updateLight({
-            lightId = tokenLightId,
-            newRow = 8,
-            newColumn = math.floor(x + 0.5 + translation)
-        })
+        local newX = x + translation
+        if newX > 190 then
+            newX = newX - 190 + 35
+        end
+        camera.setLocation(newX, 7.5)
+        stateMachine.setStateBasedOnXAxisPosition(newX)
+        stateMachine.syncWithLights()
+        if tokenLightId ~= nil then
+            lightingModel.updateLight({
+                lightId = tokenLightId,
+                newRow = 8,
+                newColumn = math.floor(newX + 0.5)
+            })
+        end
         lightingModel.update(deltaTime)
     else
+        lastTime = event.time
         camera.setLocation(50.5, 7.5)
         lightingModel.update(1)
     end
 
     tileEngine.render(camera)
     lightingModel.resetDirtyFlags()
-
-    lastTime = event.time
 end
 
 -- -----------------------------------------------------------------------------------
@@ -149,28 +308,13 @@ function scene:create( event )
         hideOutOfSightElements=false
     })
 
-    local lightingModel = TileEngine.LightingModel.new({
+    lightingModel = TileEngine.LightingModel.new({
         isTransparent = isTileTransparent,
         isTileAffectedByAmbient = allTilesAffectedByAmbient,
-        useTransitioners = true,
+        useTransitioners = false,
         compensateLightingForViewingPosition = false
     })
     lightingModel.setAmbientLight(1,1,1,0.1)
-    lightingModel.addLight({
-        row=8,column=58,r=1,g=0,b=0,intensity=1,radius=15
-    })
-    lightingModel.addLight({
-        row=8,column=66,r=0,g=1,b=0,intensity=1,radius=15
-    })
-    lightingModel.addLight({
-        row=8,column=74,r=0,g=0,b=1,intensity=1,radius=15
-    })
-    lightingModel.addLight({
-        row=10,column=97,r=1,g=1,b=0.5,intensity=1,radius=20
-    })
-    tokenLightId = lightingModel.addLight({
-        row=8,column=26,r=1,g=1,b=1,intensity=0.65,radius=7
-    })
 
     local module = TileEngine.Module.new({
         name="moduleMain",
