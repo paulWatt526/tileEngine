@@ -1,8 +1,7 @@
 local Library = require "CoronaLibrary"
 
 -- Create library
-local lib = Library:new{ name='wattageTileEngine', publisherId='com.blindprophetsoftware' }
-
+local lib = Library:new{ name='plugin.wattageTileEngine', publisherId='com.blindprophetsoftware' }
 -------------------------------------------------------------------------------
 -- BEGIN (Insert your implementation starting here)
 -------------------------------------------------------------------------------
@@ -19,7 +18,7 @@ lib.Module = TileEngineModule.Module
 lib.ObjectSystem = require "plugin.wattageTileEngine.objectSystem"
 lib.SpriteInfo = TileEngineModule.SpriteInfo
 lib.Tile = TileEngineModule.Tile
-lib.TileLayer = TileEngineModule.TileLayer
+lib.TileLayer = TileEngineModule.Layer
 --lib.TileSelectionLayer = TileEngineModule.TileSelectionLayer
 lib.Utils = {}
 lib.Utils.addToGrid = Utils.addToGrid

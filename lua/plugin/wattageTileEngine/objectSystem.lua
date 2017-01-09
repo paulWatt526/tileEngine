@@ -18,7 +18,8 @@ ObjectSystem.Factory.getForType = function(typeName)
     return ObjectSystem.Factory.factories[typeName]
 end
 
-ObjectSystem.new = function(params)
+ObjectSystem.Object = {}
+ObjectSystem.Object.new = function(params)
     Utils.requireParams({
         "objectType"
     }, params)

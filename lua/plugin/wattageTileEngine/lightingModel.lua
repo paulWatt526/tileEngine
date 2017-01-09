@@ -96,14 +96,16 @@ LightingModel.new = function(params)
     requireParams({
         "isTransparent",
         "isTileAffectedByAmbient",
-        "useTransitioners"
+        "useTransitioners",
+        "compensateLightingForViewingPosition"
     }, params)
 
     local isTransparentCallback = params.isTransparent
     local isTileAffectedByAmbientCallback = params.isTileAffectedByAmbient
     local useTransitioners = params.useTransitioners
+    local compensateLightingForViewingPosition = params.compensateLightingForViewingPosition
 
-    local self = ObjectSystem.new({objectType=LightingModel.objectType})
+    local self = ObjectSystem.Object.new({objectType=LightingModel.objectType})
 
     -- Tracks next available light ID to assign to new lights
     local nextLightId
@@ -149,23 +151,20 @@ LightingModel.new = function(params)
 
     -- Marks the tile at the row/column coordinate as dirty and ensures uniqueness of entries.
     local function markDirtyAggregateTile(row, column)
-        local exists = false
         local uniqueRowIndex = dirtyAggregateUniqueIndex[row]
         if uniqueRowIndex ~= nil then
             if uniqueRowIndex[column] then
-                exists = true
+                return
             end
         else
             uniqueRowIndex = {}
             dirtyAggregateUniqueIndex[row] = uniqueRowIndex
         end
 
-        if not exists then
-            uniqueRowIndex[column] = true
-            dirtyAggregateRows[dirtyAggregateIndex] = row
-            dirtyAggregateColumns[dirtyAggregateIndex] = column
-            dirtyAggregateIndex = dirtyAggregateIndex + 1
-        end
+        uniqueRowIndex[column] = true
+        dirtyAggregateRows[dirtyAggregateIndex] = row
+        dirtyAggregateColumns[dirtyAggregateIndex] = column
+        dirtyAggregateIndex = dirtyAggregateIndex + 1
     end
 
     -- Convenience function to clamp a value to a specified range.
@@ -182,15 +181,16 @@ LightingModel.new = function(params)
     end
 
     -- Callback to light affected area
-    local function fovCallback(x, y, distance, isTransparent)
-        -- Record state of transparency
-        local transparencyStateRow = transparencyStateByRow[y]
-        if transparencyStateRow == nil then
-            transparencyStateRow = {}
-            transparencyStateByRow[y] = transparencyStateRow
+    local function fovCallback(x, y, distanceSquared, isTransparent)
+        -- Record state of transparency if compensating for viewing position
+        if compensateLightingForViewingPosition then
+            local transparencyStateRow = transparencyStateByRow[y]
+            if transparencyStateRow == nil then
+                transparencyStateRow = {}
+                transparencyStateByRow[y] = transparencyStateRow
+            end
+            transparencyStateRow[x] = isTransparent
         end
-        transparencyStateRow[x] = isTransparent
-
 
         local curAffectedRow = curAffectedArea[y]
         if curAffectedRow == nil then
@@ -199,7 +199,7 @@ LightingModel.new = function(params)
         end
 
         -- New equation simple
-        local attenuation = clamp(1.0 - distance / curLight.radius, 0, 1)
+        local attenuation = clamp(1.0 - distanceSquared / (curLight.radius * curLight.radius), 0, 1)
         attenuation = attenuation * attenuation
 
         -- New equation not as simple
@@ -293,10 +293,10 @@ LightingModel.new = function(params)
         for i=1,#activeTransitioners do
             activeTransitioners[i].update(deltaTime)
         end
-        -- sort indexes in descending order
-        table.sort(transitionerIndexesForRemoval, function(a, b) return a > b end)
+        -- sort indexes
+        table.sort(transitionerIndexesForRemoval)
         -- remove indexes
-        for i=1,#transitionerIndexesForRemoval do
+        for i=#transitionerIndexesForRemoval,1,-1 do
             local indexToRemove = transitionerIndexesForRemoval[i]
             local transitionerForRemoval = activeTransitioners[indexToRemove]
             if transitionerForRemoval ~= nil then
@@ -823,6 +823,7 @@ LightingModel.new = function(params)
         parentSave(diskStream)
 
         diskStream.write(useTransitioners)
+        diskStream.write(compensateLightingForViewingPosition)
 
         diskStream.write(nextLightId)
 
@@ -854,6 +855,7 @@ LightingModel.new = function(params)
         parentLoad(diskStream)
 
         useTransitioners = diskStream.read()
+        compensateLightingForViewingPosition = diskStream.read()
 
         nextLightId = diskStream.read()
 

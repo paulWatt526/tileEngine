@@ -48,7 +48,7 @@ LineOfSight.new = function(params)
                 if processThisLoop then
                     local distanceSquared = deltaX * deltaX + deltaY * deltaY
                     if distanceSquared <= _radiusSquared then
-                        fovCallback(currentX, currentY, sqrt(distanceSquared), isTransparent(currentX, currentY))
+                        fovCallback(currentX, currentY, distanceSquared, isTransparent(currentX, currentY))
                     end
 
                     if blocked then

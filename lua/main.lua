@@ -5,15 +5,18 @@
 -- Copyright (C) 2015 Corona Labs Inc. All Rights Reserved.
 --
 ------------------------------------------------------------
+local composer = require( "composer" )
 
--- Load plugin library
-local wattageTileEngine = require "plugin.wattageTileEngine"
+--profiler = require "Profiler"
+--profiler.startProfiler({time = 10000, delay = 1000})
 
 -------------------------------------------------------------------------------
 -- BEGIN (Insert your sample test starting here)
 -------------------------------------------------------------------------------
+display.setStatusBar(display.HiddenStatusBar)
+display.setDefault( "background", 0, 0, 0)
 
-
+composer.gotoScene( "quickStartScene" )
 -------------------------------------------------------------------------------
 -- END
 -------------------------------------------------------------------------------

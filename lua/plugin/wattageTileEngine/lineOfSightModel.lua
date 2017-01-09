@@ -95,6 +95,54 @@ end
 
 local LineOfSightModel = {}
 
+LineOfSightModel.ALL_VISIBLE = {
+    update = function(centerRow, centerCol, deltaTime)
+        -- does nothing
+    end,
+    makeDirty = function()
+        -- does nothing
+    end,
+    hasDirtyTiles = function()
+        -- does nothing
+    end,
+    resetDirtyFlags = function()
+        -- does nothing
+    end,
+    isInLineOfSight = function(rowParam, columnParam)
+        return true
+    end,
+    getLineOfSightTransitionValue = function(rowParam, columnParam)
+        return 1
+    end,
+    resetChangeTracking = function()
+        -- does nothing
+    end,
+    getDirtyRows = function()
+        return {}
+    end,
+    getDirtyColumns = function()
+        return {}
+    end,
+    getDirtyCount = function()
+        return {}
+    end,
+    getRowsTransitionedIn = function()
+        return {}
+    end,
+    getColsTransitionedIn = function()
+        return {}
+    end,
+    getRowsTransitionedOut = function()
+        return {}
+    end,
+    getColsTransitionedOut = function()
+        return {}
+    end,
+    getCoordinatesIn = function()
+        return {}
+    end
+}
+
 LineOfSightModel.new = function(params)
     Utils.requireParams({
         "radius",

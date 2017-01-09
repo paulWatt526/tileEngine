@@ -235,6 +235,11 @@ EntityLayer.new = function(params)
             self.displayGroup:remove(spriteInfo.imageRect)
             entities[id] = nil
         end
+
+        for id,displayObject in pairs(nonResourceEntities) do
+            self.displayGroup:remove(displayObject)
+            nonResourceEntities[id] = nil
+        end
     end
 
     function self.addEntity(resourceKey)
@@ -1142,7 +1147,7 @@ Engine.new = function(params)
     end
 
     function self.setActiveModule(params)
-        requireParams({"moduleName", "transition"}, params)
+        requireParams({"moduleName"}, params)
 
         if trimmedLayers ~= nil then
             for i=1,#trimmedLayers do
