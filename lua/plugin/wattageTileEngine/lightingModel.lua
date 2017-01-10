@@ -49,6 +49,11 @@ AggregateLightTransitioner.new = function(params)
         return {r = endR, g = endG, b = endB}
     end
 
+    function self.forceFinish()
+        elapsedTime = transitionTime
+        self.update(0)
+    end
+
     function self.update(deltaTime)
         elapsedTime = elapsedTime + deltaTime
 
@@ -263,8 +268,19 @@ LightingModel.new = function(params)
         end
     end
 
-    function self.setUseTransitioners(v)
-        useTransitioners = v
+    function self.setUseTransitioners(useTransitionersParam)
+        useTransitioners = useTransitionersParam
+
+        if not useTransitioners then
+            for i=1,#activeTransitioners do
+                activeTransitioners[i].forceFinish()
+            end
+
+            for i=1,#transitionerTargetCoordinates do
+                local coordinate = transitionerTargetCoordinates[i]
+                markDirtyAggregateTile(coordinate.row, coordinate.column)
+            end
+        end
     end
 
     -- Will result in all aggregate tiles affected by light as dirty and set the ambientLightChanged flag to true
