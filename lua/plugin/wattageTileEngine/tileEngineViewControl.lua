@@ -21,6 +21,13 @@ TileEngineViewControl.new = function(params)
         tileEngineInstance.render(camera)
     end
 
+    function self.destroy()
+        container:removeSelf()
+        container = nil
+        camera = nil
+        tileEngineInstance = nil
+    end
+
     local function initialize()
         container = display.newContainer(params.pixelWidth, params.pixelHeight)
         params.parentGroup:insert(container)

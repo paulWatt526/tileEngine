@@ -1215,6 +1215,24 @@ Engine.new = function(params)
         return tileSize
     end
 
+    function self.destroy()
+        spriteResolver = nil
+
+        if #modules > 0 then
+            for i=1,#modules do
+                modules[i].destroy()
+            end
+        end
+        modules = nil
+
+        activeModule = nil
+
+        masterGroup:removeSelf()
+        masterGroup = nil
+
+        trimmedLayers = nil
+    end
+
     return self
 end
 
