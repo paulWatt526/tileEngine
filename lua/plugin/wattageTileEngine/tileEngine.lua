@@ -292,6 +292,32 @@ EntityLayer.new = function(params)
         sprite.y = y
     end
 
+    function self.setEntityTilePosition(entityId, rowContinuous, colContinuous)
+        local sprite = entities[entityId].imageRect
+        sprite.x = tileSize * colContinuous
+        sprite.y = tileSize * rowContinuous
+    end
+
+    function self.getEntityTilePosition(entityId)
+        local sprite = entities[entityId].imageRect
+        local row = sprite.y / tileSize
+        local col = sprite.x / tileSize
+        return row, col
+    end
+
+    function self.setNonResourceEntityTilePosition(entityId, rowContinuous, colContinuous)
+        local sprite = nonResourceEntities[entityId]
+        sprite.x = tileSize * colContinuous
+        sprite.y = tileSize * rowContinuous
+    end
+
+    function self.getNonResourceEntityTilePosition(entityId)
+        local sprite = nonResourceEntities[entityId]
+        local row = sprite.y / tileSize
+        local col = sprite.x / tileSize
+        return row, col
+    end
+
     function self.getEntityInfo(entityId)
         return entities[entityId]
     end
