@@ -320,6 +320,7 @@ LightingModel.new = function(params)
             local indexToRemove = transitionerIndexesForRemoval[i]
             local transitionerForRemoval = activeTransitioners[indexToRemove]
             if transitionerForRemoval ~= nil then
+                markDirtyAggregateTile(transitionerForRemoval.row, transitionerForRemoval.column)
                 aggregateLightTransitionerByCoordinate[transitionerForRemoval.row][transitionerForRemoval.column] = nil
                 table.remove(activeTransitioners, indexToRemove)
             end
@@ -441,6 +442,7 @@ LightingModel.new = function(params)
             local aggregateB = 0
 
             --region Calculate aggregate value
+            local isAffectedByLight = false
             for i=1,#trimmedAffectedAreas do
                 local entry = trimmedAffectedAreas[i]
                 local areaRow = entry.area[aggregateRow]
@@ -452,6 +454,7 @@ LightingModel.new = function(params)
                         aggregateR = min(aggregateR + light.r * intensity, 1)
                         aggregateG = min(aggregateG + light.g * intensity, 1)
                         aggregateB = min(aggregateB + light.b * intensity, 1)
+                        isAffectedByLight = true
                     end
                 end
             end
@@ -464,56 +467,85 @@ LightingModel.new = function(params)
                 aggregateLightByCoordinate[aggregateRow] = aggregateRowArray
             end
             local cell = aggregateRowArray[aggregateCol]
-            local newR
-            local newG
-            local newB
-            if isTileAffectedByAmbientCallback(aggregateRow, aggregateCol) then
-                newR = min(ambientRed * ambientIntensity + aggregateR, 1)
-                newG = min(ambientGreen * ambientIntensity + aggregateG, 1)
-                newB = min(ambientBlue * ambientIntensity + aggregateB, 1)
-            else
-                newR = aggregateR
-                newG = aggregateG
-                newB = aggregateB
-            end
 
-            if cell == nil or not useTransitioners then
-                aggregateRowArray[aggregateCol] = {
-                    r = newR,
-                    g = newG,
-                    b = newB
-                }
-            else
+            if not isAffectedByLight then
                 local transitionerRow = aggregateLightTransitionerByCoordinate[aggregateRow]
                 if transitionerRow == nil then
                     transitionerRow = {}
                     aggregateLightTransitionerByCoordinate[aggregateRow] = transitionerRow
                 end
                 local transitioner = transitionerRow[aggregateCol]
-                if transitioner == nil then
-                    transitioner = AggregateLightTransitioner.new({
-                        index = #activeTransitioners,
-                        aggregateLightByCoordinate = aggregateLightByCoordinate,
-                        transitionerTargetCoordinates = transitionerTargetCoordinates,
-                        row = aggregateRow,
-                        column = aggregateCol,
-                        startR = cell.r,
-                        startG = cell.g,
-                        startB = cell.b,
-                        endR = newR,
-                        endG = newG,
-                        endB = newB,
-                        transitionTime = 250,
-                        transitionerIndexesForRemoval = transitionerIndexesForRemoval
-                    })
-                    transitionerRow[aggregateCol] = transitioner
-                    table.insert(activeTransitioners, transitioner)
+
+                -- No light data, clear the aggregate value or update transitioner
+                if not useTransitioners or transitioner == nil then
+                    aggregateRowArray[aggregateCol] = nil
                 else
-                    transitioner.resetIfChanged({
-                        endR = newR,
-                        endG = newG,
-                        endB = newB
-                    })
+                    if isTileAffectedByAmbientCallback(aggregateRow, aggregateCol) then
+                        transitioner.resetIfChanged({
+                            endR = ambientRed * ambientIntensity,
+                            endG = ambientGreen * ambientIntensity,
+                            endB = ambientBlue * ambientIntensity
+                        })
+                    else
+                        transitioner.resetIfChanged({
+                            endR = 0,
+                            endG = 0,
+                            endB = 0
+                        })
+                    end
+                end
+            else
+                local newR
+                local newG
+                local newB
+                if isTileAffectedByAmbientCallback(aggregateRow, aggregateCol) then
+                    newR = min(ambientRed * ambientIntensity + aggregateR, 1)
+                    newG = min(ambientGreen * ambientIntensity + aggregateG, 1)
+                    newB = min(ambientBlue * ambientIntensity + aggregateB, 1)
+                else
+                    newR = aggregateR
+                    newG = aggregateG
+                    newB = aggregateB
+                end
+
+                if cell == nil or not useTransitioners then
+                    aggregateRowArray[aggregateCol] = {
+                        r = newR,
+                        g = newG,
+                        b = newB
+                    }
+                else
+                    local transitionerRow = aggregateLightTransitionerByCoordinate[aggregateRow]
+                    if transitionerRow == nil then
+                        transitionerRow = {}
+                        aggregateLightTransitionerByCoordinate[aggregateRow] = transitionerRow
+                    end
+                    local transitioner = transitionerRow[aggregateCol]
+                    if transitioner == nil then
+                        transitioner = AggregateLightTransitioner.new({
+                            index = #activeTransitioners,
+                            aggregateLightByCoordinate = aggregateLightByCoordinate,
+                            transitionerTargetCoordinates = transitionerTargetCoordinates,
+                            row = aggregateRow,
+                            column = aggregateCol,
+                            startR = cell.r,
+                            startG = cell.g,
+                            startB = cell.b,
+                            endR = newR,
+                            endG = newG,
+                            endB = newB,
+                            transitionTime = 250,
+                            transitionerIndexesForRemoval = transitionerIndexesForRemoval
+                        })
+                        transitionerRow[aggregateCol] = transitioner
+                        table.insert(activeTransitioners, transitioner)
+                    else
+                        transitioner.resetIfChanged({
+                            endR = newR,
+                            endG = newG,
+                            endB = newB
+                        })
+                    end
                 end
             end
             --endregion

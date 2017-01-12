@@ -252,6 +252,16 @@ LineOfSightModel.new = function(params)
     end
 
     function self.update(centerRow, centerCol, deltaTime)
+        if curCenterRow == nil and curCenterColumn == nil then
+            curCenterRow = centerRow
+            curCenterColumn = centerCol
+            isDirty = true
+        elseif curCenterRow ~= centerRow or curCenterColumn ~= centerCol then
+            curCenterRow = centerRow
+            curCenterColumn = centerCol
+            isDirty = true
+        end
+
         -- update transitioners
         for i=1,#activeTransitioners do
             activeTransitioners[i].update(deltaTime)
