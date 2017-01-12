@@ -298,6 +298,15 @@ LightingModel.new = function(params)
         end
     end
 
+    function self.markChangeInTransparency(row, column)
+        self.markLightAsDirtyIfAffectedAreaContainsTile(row, column)
+        -- clear transparency cache
+        local transparencyRow = transparencyStateByRow[row]
+        if transparencyRow ~= nil then
+            transparencyRow[column] = nil
+        end
+    end
+
     function self.getAmbientLight()
         return {
             r = math.min(ambientRed * ambientIntensity, 1),
