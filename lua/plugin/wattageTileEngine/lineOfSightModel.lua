@@ -171,6 +171,7 @@ LineOfSightModel.new = function(params)
     local activeTransitioners                  -- Stores the active transitioners
     local transitionerIndexesForRemoval        -- Stores the indexes of the transitioners that can be removed from the active transitioner list.
     local transitionerTargetCoordinates        -- Stores tile coordinates of the tiles affected by the transitioners.  This is necessary to notify tiles to update their tint.
+    local transitionTime                       -- Stores the time in milliseconds for transitions to occur.
 
     local dirtyRows
     local dirtyColumns
@@ -251,6 +252,10 @@ LineOfSightModel.new = function(params)
         nextCoordinatesIn = {}
     end
 
+    function self.setTransitionTime(time)
+        transitionTime = time
+    end
+
     function self.update(centerRow, centerCol, deltaTime)
         if curCenterRow == nil and curCenterColumn == nil then
             curCenterRow = centerRow
@@ -321,7 +326,7 @@ LineOfSightModel.new = function(params)
                         column = col,
                         startValue = 0,
                         endValue = 1,
-                        transitionTime = 375,
+                        transitionTime = transitionTime,
                         transitionerIndexesForRemoval = transitionerIndexesForRemoval
                     })
                     transitionerRow[col] = transitioner
@@ -352,7 +357,7 @@ LineOfSightModel.new = function(params)
                         column = col,
                         startValue = 1,
                         endValue = 0,
-                        transitionTime = 375,
+                        transitionTime = transitionTime,
                         transitionerIndexesForRemoval = transitionerIndexesForRemoval
                     })
                     transitionerRow[col] = transitioner
@@ -478,6 +483,7 @@ LineOfSightModel.new = function(params)
         activeTransitioners = {}
         transitionerIndexesForRemoval = {}
         transitionerTargetCoordinates = {}
+        transitionTime = 375
 
         dirtyRows = {}
         dirtyColumns = {}
