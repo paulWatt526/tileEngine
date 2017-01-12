@@ -372,8 +372,11 @@ function scene:create( event )
         tileEngineInstance = tileEngine
     })
 
+    local uiLayer = display.newGroup()
+    sceneGroup:insert(uiLayer)
+
     -- Button to advance scene
-    nextSceneButton = display.newImageRect("nextScene.png", 237, 64)
+    nextSceneButton = display.newImageRect(uiLayer, "nextScene.png", 237, 64)
     nextSceneButton.x = display.screenOriginX + display.actualContentWidth - 237 / 2 - 5
     nextSceneButton.y = display.screenOriginY + 64 / 2 + 5
 end

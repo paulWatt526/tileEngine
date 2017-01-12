@@ -51,6 +51,7 @@ local entityLayer                           -- Reference to the entity layer
 local playerTokenId                         -- Will track the ID of the player token.
 local toggleWallsButton                     -- Reference to the toggle botton
 local nextSceneButton
+local tapScreenText
 
 local function nextSceneHandler()
     Composer.gotoScene( "losScene" , {
@@ -587,15 +588,21 @@ function scene:create( event )
     stateMachine.init()
     pillarStateMachine.init()
 
+    local uiLayer = display.newGroup()
+    sceneGroup:insert(uiLayer)
+
     -- Button to toggle walls
-    toggleWallsButton = display.newImageRect("toggleWalls.png", 237, 64)
+    toggleWallsButton = display.newImageRect(uiLayer, "toggleWalls.png", 237, 64)
     toggleWallsButton.x = display.screenOriginX + 237 / 2 + 5
     toggleWallsButton.y = display.screenOriginY + 64 / 2 + 5
 
     -- Button to advance scene
-    nextSceneButton = display.newImageRect("nextScene.png", 237, 64)
+    nextSceneButton = display.newImageRect(uiLayer, "nextScene.png", 237, 64)
     nextSceneButton.x = display.screenOriginX + display.actualContentWidth - 237 / 2 - 5
     nextSceneButton.y = display.screenOriginY + 64 / 2 + 5
+
+    tapScreenText = display.newText(uiLayer, "Tap Screen to Cycle Lights",
+        display.contentCenterX, display.screenOriginY + display.actualContentHeight - 50)
 end
 
 
@@ -681,6 +688,9 @@ function scene:destroy( event )
 
     nextSceneButton:removeSelf()
     nextSceneButton = nil
+
+    tapScreenText:removeSelf()
+    tapScreenText = nil
 end
 
 
