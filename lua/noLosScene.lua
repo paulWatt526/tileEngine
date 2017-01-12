@@ -402,7 +402,6 @@ end
 local function onFrame(event)
     local camera = tileEngineViewControl.getCamera()
     local lightingModel = tileEngine.getActiveModule().lightingModel
-    local lineOfSightModel = tileEngine.getActiveModule().losModel
 
     if lastTime ~= 0 then
         -- Determine the amount of time that has passed since the last frame and
@@ -454,11 +453,6 @@ local function onFrame(event)
         -- Update the state machine
         stateMachine.update(deltaTime)
 
-        -- Update the line of sight model passing the row and column for the current
-        -- point of view nad the amount of time that has passed
-        -- since the last frame.
-        lineOfSightModel.update(8, math.floor(curXPos + 0.5), deltaTime)
-
         -- Update the lighting model passing the amount of time that has passed since
         -- the last frame.
         lightingModel.update(deltaTime)
@@ -475,11 +469,6 @@ local function onFrame(event)
         -- Set the initial position of the player token
         entityLayer.centerEntityOnTile(playerTokenId, 8, 2)
 
-        -- Set the initial position of the player to match the
-        -- position of the camera.  Pass in a time delta of 1 since this is
-        -- the first frame.
-        lineOfSightModel.update(8, 3, 1)
-
         -- Since a time delta cannot be calculated on the first frame, 1 is passed
         -- in here as a placeholder.
         lightingModel.update(1)
@@ -492,11 +481,6 @@ local function onFrame(event)
     -- the lightingModel.update() function.  This call resets the change tracking
     -- and must be called after lightingModel.update().
     lightingModel.resetDirtyFlags()
-
-    -- The line of sight model also tracks changes to the player position.
-    -- It is necessary to reset the change tracking to provide a clean
-    -- slate for the next frame.
-    lineOfSightModel.resetDirtyFlags()
 end
 
 -- -----------------------------------------------------------------------------------
@@ -515,8 +499,8 @@ function scene:create( event )
         parentGroup=tileEngineLayer,
         tileSize=32,
         spriteResolver=spriteResolver,
-        compensateLightingForViewingPosition=true,
-        hideOutOfSightElements=true
+        compensateLightingForViewingPosition=false,
+        hideOutOfSightElements=false
     })
 
     -- The tile engine needs at least one Module.  It can support more than
@@ -528,16 +512,8 @@ function scene:create( event )
         isTransparent = isTileTransparent,
         isTileAffectedByAmbient = allTilesAffectedByAmbient,
         useTransitioners = false,
-        compensateLightingForViewingPosition = true
+        compensateLightingForViewingPosition = false
     })
-
-    -- An instance of LineOfSightModel is created for the module to
-    -- track which tiles are visible.
-    local lineOfSightModel = TileEngine.LineOfSightModel.new({
-        radius = 20,
-        isTransparent = isTileTransparent
-    })
-    lineOfSightModel.setTransitionTime(0)
 
     -- Instantiate the module.
     local module = TileEngine.Module.new({
@@ -545,7 +521,7 @@ function scene:create( event )
         rows=ROW_COUNT,
         columns=COLUMN_COUNT,
         lightingModel=lightingModel,
-        losModel=lineOfSightModel
+        losModel=TileEngine.LineOfSightModel.ALL_VISIBLE
     })
 
     -- Next, layers will be added to the Module...

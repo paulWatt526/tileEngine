@@ -537,7 +537,7 @@ function scene:create( event )
         radius = 20,
         isTransparent = isTileTransparent
     })
-    lineOfSightModel.setTransitionTime(0)
+    lineOfSightModel.setTransitionTime(225)
 
     -- Instantiate the module.
     local module = TileEngine.Module.new({
