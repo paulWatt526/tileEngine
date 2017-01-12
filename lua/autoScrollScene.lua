@@ -39,6 +39,15 @@ local greenLightId
 local blueLightId
 local offWhiteLightId
 local tokenLightId
+local nextSceneButton
+
+local function nextSceneHandler()
+    Composer.gotoScene( "noLosScene" , {
+        time = 250,
+        effect = "fade"
+    })
+    return true
+end
 
 local spriteSheetInfo = require "tiles"
 local spriteSheet = graphics.newImageSheet("tiles.png", spriteSheetInfo:getSheet())
@@ -363,7 +372,10 @@ function scene:create( event )
         tileEngineInstance = tileEngine
     })
 
-    Runtime:addEventListener( "enterFrame", onFrame )
+    -- Button to advance scene
+    nextSceneButton = display.newImageRect("nextScene.png", 237, 64)
+    nextSceneButton.x = display.screenOriginX + display.actualContentWidth - 237 / 2 - 5
+    nextSceneButton.y = display.screenOriginY + 64 / 2 + 5
 end
 
 
@@ -376,9 +388,17 @@ function scene:show( event )
     if ( phase == "will" ) then
         -- Code here runs when the scene is still off screen (but is about to come on screen)
 
+        -- Set the lastTime variable to 0.  This will indicate to the onFrame event handler
+        -- that it is the first frame.
+        lastTime = 0
+
+        -- Register the onFrame event handler to be called before each frame.
+        Runtime:addEventListener( "enterFrame", onFrame )
+
+        -- Register an event listener to handle screen taps.
+        nextSceneButton:addEventListener("tap", nextSceneHandler)
     elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
-
     end
 end
 
@@ -392,9 +412,13 @@ function scene:hide( event )
     if ( phase == "will" ) then
         -- Code here runs when the scene is on screen (but is about to go off screen)
 
+        -- Remove the onFrame event handler.
+        Runtime:removeEventListener( "enterFrame", onFrame )
+
+        -- Remove the event listener for taps
+        nextSceneButton:removeEventListener( "tap", nextSceneHandler)
     elseif ( phase == "did" ) then
         -- Code here runs immediately after the scene goes entirely off screen
-
     end
 end
 
@@ -405,6 +429,19 @@ function scene:destroy( event )
     local sceneGroup = self.view
     -- Code here runs prior to the removal of scene's view
 
+    -- Destroy the tile engine instance to release all of the resources it is using
+    tileEngine.destroy()
+    tileEngine = nil
+
+    -- Destroy the ViewControl to release all of the resources it is using
+    tileEngineViewControl.destroy()
+    tileEngineViewControl = nil
+
+    -- Set the reference to the lighting model to nil.
+    lightingModel = nil
+
+    nextSceneButton:removeSelf()
+    nextSceneButton = nil
 end
 
 
