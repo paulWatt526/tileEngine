@@ -7,9 +7,6 @@
 ------------------------------------------------------------
 local composer = require( "composer" )
 
---profiler = require "Profiler"
---profiler.startProfiler({time = 10000, delay = 1000})
-
 -------------------------------------------------------------------------------
 -- BEGIN (Insert your sample test starting here)
 -------------------------------------------------------------------------------
