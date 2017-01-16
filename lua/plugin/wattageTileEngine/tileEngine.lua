@@ -435,10 +435,20 @@ Module.new = function(params)
     self.lightingModel = params.lightingModel
     self.losModel = params.losModel
 
-    function self.insertLayerAtIndex(layer, index, scalingDelta)
+    function self.insertLayerAtIndex(layer, index, scalingDelta, xScrollCoefficient, yScrollCoefficient)
+        if xScrollCoefficient == nil then
+            xScrollCoefficient = 1
+        end
+
+        if yScrollCoefficient == nil then
+            yScrollCoefficient = 1
+        end
+
         table.insert(self.layers, index, {
             layer = layer,
-            scalingDelta = scalingDelta
+            scalingDelta = scalingDelta,
+            xScrollCoefficient = xScrollCoefficient,
+            yScrollCoefficient = yScrollCoefficient
         })
     end
 
@@ -711,10 +721,16 @@ Engine.new = function(params)
         if isFirstRun or camera.isZoomDirty() or camera.isLocationDirty() or activeModule.lightingModel.hasDirtyAggregateTile() or activeModule.losModel.hasDirtyTiles() or activeModule.hasDirtyTile() then
             for i=1,#trimmedLayers do
                 -- Localize current layer from module
-                local curLayer = module.layers[i].layer
+                local curLayerMeta = module.layers[i]
+                local curLayer = curLayerMeta.layer
+                -- Determine adjusted camera position
+                local adjustedCamY = camera.getY() * curLayerMeta.yScrollCoefficient
+                local adjustedCamX = camera.getX() * curLayerMeta.xScrollCoefficient
+                -- Localize current trimmed layer
+                local curTrimmedLayer = trimmedLayers[i]
+                curTrimmedLayer.adjustedCamY = adjustedCamY
+                curTrimmedLayer.adjustedCamX = adjustedCamX
                 if curLayer.type == LAYER_TILE then
-                    -- Localize current trimmed layer
-                    local curTrimmedLayer = trimmedLayers[i]
                     -- Localize scaling for trimmed layer
                     local curScale = curTrimmedLayer.scale * camera.getZoom()
                     -- Determine scaling coefficient, this will be used to scale camera width and height
@@ -722,11 +738,11 @@ Engine.new = function(params)
                     local scaledWidth = scalingCoefficient * camera.width
                     local scaledHeight = scalingCoefficient * camera.height
                     -- Determine the bounds of what is visible
-                    local cameraRow = floor(camera.getY())
-                    local cameraCol = floor(camera.getX())
-                    local newMinCol = floor(camera.getX() - scaledWidth / 2)
+                    local cameraRow = floor(adjustedCamY)
+                    local cameraCol = floor(adjustedCamX)
+                    local newMinCol = floor(adjustedCamX - scaledWidth / 2)
                     local newMaxCol = ceil(newMinCol + scaledWidth + 1)
-                    local newMinRow = floor(camera.getY() - scaledHeight / 2)
+                    local newMinRow = floor(adjustedCamY - scaledHeight / 2)
                     local newMaxRow = ceil(newMinRow + scaledHeight + 1)
 
                     local tiles = curLayer.getTiles().elements
@@ -1228,8 +1244,8 @@ Engine.new = function(params)
             layerGroup.anchorY = 0
             layerGroup.xScale = cameraAdjustedScale
             layerGroup.yScale = cameraAdjustedScale
-            layerGroup.x = -camera.getX() * tileSize * cameraAdjustedScale
-            layerGroup.y = -camera.getY() * tileSize * cameraAdjustedScale
+            layerGroup.x = -trimmedLayer.adjustedCamX * tileSize * cameraAdjustedScale
+            layerGroup.y = -trimmedLayer.adjustedCamY * tileSize * cameraAdjustedScale
         end
     end
 
