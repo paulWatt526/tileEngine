@@ -29,12 +29,19 @@ TileEngineViewControl.new = function(params)
     end
 
     local function initialize()
-        container = display.newContainer(params.pixelWidth, params.pixelHeight)
-        params.parentGroup:insert(container)
-        container:insert(tileEngineInstance.getMasterGroup())
+        if params.useContainer then
+            container = display.newContainer(params.pixelWidth, params.pixelHeight)
+            params.parentGroup:insert(container)
+            container:insert(tileEngineInstance.getMasterGroup())
 
-        container.x = params.centerX
-        container.y = params.centerY
+            container.x = params.centerX
+            container.y = params.centerY
+        else
+            local tileEngineGroup = tileEngineInstance.getMasterGroup()
+            params.parentGroup:insert(tileEngineGroup)
+            tileEngineGroup.x = params.centerX
+            tileEngineGroup.y = params.centerY
+        end
 
         camera = TileEngine.Camera.new({
             x = 0,

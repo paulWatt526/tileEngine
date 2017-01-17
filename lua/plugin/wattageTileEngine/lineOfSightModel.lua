@@ -104,6 +104,7 @@ LineOfSightModel.ALL_VISIBLE = {
     end,
     hasDirtyTiles = function()
         -- does nothing
+        return false
     end,
     resetDirtyFlags = function()
         -- does nothing

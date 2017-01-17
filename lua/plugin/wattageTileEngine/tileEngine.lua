@@ -88,13 +88,15 @@ local LAYER_TILE = 1
 local LAYER_ENTITY = 2
 local LAYER_TILE_SELECTION = 3
 
+local LayerConstants = {}
+LayerConstants.LIGHTING_MODE_APPLY_ALL = 0
+LayerConstants.LIGHTING_MODE_AMBIENT_ONLY = 1
+
 local BaseLayer = {}
-BaseLayer.LIGHTING_MODE_APPLY_ALL = 0
-BaseLayer.LIGHTING_MODE_AMBIENT_ONLY = 1
 BaseLayer.new = function(layerType)
     local self = {}
 
-    local lightingMode = BaseLayer.LIGHTING_MODE_APPLY_ALL --Default
+    local lightingMode = LayerConstants.LIGHTING_MODE_APPLY_ALL --Default
 
     self.type = layerType
     self.displayGroup = display.newGroup()
@@ -624,13 +626,13 @@ Engine.new = function(params)
         if newGroup ~= nil then
             local lineOfSightTransitionValue = activeModule.losModel.getLineOfSightTransitionValue(row, col)
             local layerLightingMode = layer.getLightingMode()
-            if layerLightingMode == BaseLayer.LIGHTING_MODE_APPLY_ALL then
+            if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                 local light = activeModule.lightingModel.getAggregateLight(row, col)
                 if light ~= nil then
                     newGroup:setFillColor(light.r, light.g, light.b)
                     newGroup.alpha = lineOfSightTransitionValue
                 end
-            elseif layerLightingMode == BaseLayer.LIGHTING_MODE_AMBIENT_ONLY then
+            elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                 local ambientLight = activeModule.lightingModel.getAmbientLight()
                 newGroup:setFillColor(ambientLight.r, ambientLight.g, ambientLight.b)
                 newGroup.alpha = lineOfSightTransitionValue
@@ -974,10 +976,10 @@ Engine.new = function(params)
                                         local ambientChangeGroup = rowArray[ambientChangeCol]
                                         if ambientChangeGroup ~= nil then
                                             local layerLightingMode = curLayer.getLightingMode()
-                                            if layerLightingMode == BaseLayer.LIGHTING_MODE_APPLY_ALL then
+                                            if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                                                 local light = activeModule.lightingModel.getAggregateLight(ambientChangeRow, ambientChangeCol)
                                                 ambientChangeGroup:setFillColor(light.r, light.g, light.b)
-                                            elseif layerLightingMode == BaseLayer.LIGHTING_MODE_AMBIENT_ONLY then
+                                            elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                                                 local light = activeModule.lightingModel.getAmbientLight()
                                                 ambientChangeGroup:setFillColor(light.r, light.g, light.b)
                                             else
@@ -1000,10 +1002,10 @@ Engine.new = function(params)
                                     local dirtyLitGroup = rowArray[dirtyLitColumn]
                                     if dirtyLitGroup ~= nil then
                                         local layerLightingMode = curLayer.getLightingMode()
-                                        if layerLightingMode == BaseLayer.LIGHTING_MODE_APPLY_ALL then
+                                        if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                                             local light = activeModule.lightingModel.getAggregateLight(dirtyLitRow, dirtyLitColumn)
                                             dirtyLitGroup:setFillColor(light.r, light.g, light.b)
-                                        elseif layerLightingMode == BaseLayer.LIGHTING_MODE_AMBIENT_ONLY then
+                                        elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                                             local light = activeModule.lightingModel.getAmbientLight()
                                             dirtyLitGroup:setFillColor(light.r, light.g, light.b)
                                         else
@@ -1028,11 +1030,11 @@ Engine.new = function(params)
                                         local group = rowArray[col]
                                         if group ~= nil then
                                             local layerLightingMode = curLayer.getLightingMode()
-                                            if layerLightingMode == BaseLayer.LIGHTING_MODE_APPLY_ALL then
+                                            if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                                                 local light = activeModule.lightingModel.getAggregateLight(row, col)
                                                 group:setFillColor(light.r, light.g, light.b)
                                                 group.alpha = 1
-                                            elseif layerLightingMode == BaseLayer.LIGHTING_MODE_AMBIENT_ONLY then
+                                            elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                                                 local light = activeModule.lightingModel.getAmbientLight()
                                                 group:setFillColor(light.r, light.g, light.b)
                                                 group.alpha = 1
@@ -1150,11 +1152,11 @@ Engine.new = function(params)
                     local column = floor(imageRect.x / tileSize) + 1
                     local lineOfSightTransitionValue = activeModule.losModel.getLineOfSightTransitionValue(row, column)
                     local layerLightingMode = curLayer.getLightingMode()
-                    if layerLightingMode == BaseLayer.LIGHTING_MODE_APPLY_ALL then
+                    if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                         local aggregateLight = activeModule.lightingModel.getAggregateLight(row, column)
                         imageRect:setFillColor(aggregateLight.r, aggregateLight.g, aggregateLight.b)
                         imageRect.alpha = lineOfSightTransitionValue
-                    elseif layerLightingMode == BaseLayer.LIGHTING_MODE_AMBIENT_ONLY then
+                    elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                         local ambientLight = activeModule.lightingModel.getAmbientLight()
                         imageRect:setFillColor(ambientLight.r, ambientLight.g, ambientLight.b)
                         imageRect.alpha = lineOfSightTransitionValue
@@ -1287,6 +1289,7 @@ return {
     TileSelectionLayer = TileSelectionLayer,
     EntityLayer = EntityLayer,
     Layer = Layer,
+    LayerConstants = LayerConstants,
     Tile = Tile,
     SpriteInfo = SpriteInfo
 }

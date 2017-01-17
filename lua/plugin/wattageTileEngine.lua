@@ -12,6 +12,7 @@ local Utils = require "plugin.wattageTileEngine.utils"
 lib.Camera = TileEngineModule.Camera
 lib.Engine = TileEngineModule.Engine
 lib.EntityLayer = TileEngineModule.EntityLayer
+lib.LayerConstants = TileEngineModule.LayerConstants
 lib.LightingModel = require "plugin.wattageTileEngine.lightingModel"
 lib.LineOfSightModel = require "plugin.wattageTileEngine.lineOfSightModel"
 lib.Module = TileEngineModule.Module
