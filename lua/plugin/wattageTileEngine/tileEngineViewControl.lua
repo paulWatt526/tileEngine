@@ -22,7 +22,9 @@ TileEngineViewControl.new = function(params)
     end
 
     function self.destroy()
-        container:removeSelf()
+        if container ~= nil then
+            container:removeSelf()
+        end
         container = nil
         camera = nil
         tileEngineInstance = nil
