@@ -391,7 +391,7 @@ end
 -- environment may represent the inside of a cabin, and these tiles would need to
 -- not be affected by ambient lighting.
 -- -----------------------------------------------------------------------------------
-local function allTilesAffectedByAmbient(column, row)
+local function allTilesAffectedByAmbient(row, column)
     return true
 end
 

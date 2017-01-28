@@ -260,7 +260,7 @@ local function isTileTransparent(column, row)
     return value == nil or value == 0
 end
 
-local function allTilesAffectedByAmbient(column, row)
+local function allTilesAffectedByAmbient(row, column)
     return true
 end
 
