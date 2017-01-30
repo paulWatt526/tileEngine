@@ -229,6 +229,7 @@ EntityLayer.new = function(params)
     local tileSize= params.tileSize
     local spriteResolver = params.spriteResolver
     local nextEntityId = 1
+    local nextNonResourceEntityId = 1
     local entities = {}
     local nonResourceEntities = {}
 
@@ -257,8 +258,8 @@ EntityLayer.new = function(params)
     end
 
     function self.addNonResourceEntity(displayObject)
-        local id = nextEntityId
-        nextEntityId = nextEntityId + 1
+        local id = nextNonResourceEntityId
+        nextNonResourceEntityId = nextNonResourceEntityId + 1
 
         nonResourceEntities[id] = displayObject
         self.displayGroup:insert(displayObject)
@@ -342,6 +343,7 @@ EntityLayer.new = function(params)
         tileSize = nil
         spriteResolver = nil
         nextEntityId = nil
+        nextNonResourceEntityId = nil
         entities = nil
         nonResourceEntities = nil
 
