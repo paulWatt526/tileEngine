@@ -9,7 +9,7 @@ local requireParams = Utils.requireParams
 local SpriteInfo = {}
 
 SpriteInfo.new = function(params)
-    requireParams({"imageRect", "width", "height"}, params)
+--    requireParams({"imageRect", "width", "height"}, params)
 
     local self = {}
 
@@ -32,7 +32,7 @@ end
 local Tile = {}
 
 Tile.new = function(params)
-    requireParams({"resourceKey"}, params)
+--    requireParams({"resourceKey"}, params)
 
     local self = {}
 
@@ -439,7 +439,7 @@ Module.new = function(params)
     self.lightingModel = params.lightingModel
     self.losModel = params.losModel
 
-    function self.insertLayerAtIndex(layer, index, scalingDelta, xScrollCoefficient, yScrollCoefficient)
+    function self.insertLayerAtIndex(layer, index, scalingDelta, xScrollCoefficient, yScrollCoefficient, xOffset, yOffset)
         if xScrollCoefficient == nil then
             xScrollCoefficient = 1
         end
@@ -448,11 +448,21 @@ Module.new = function(params)
             yScrollCoefficient = 1
         end
 
+        if xOffset == nil then
+            xOffset = 0
+        end
+
+        if yOffset == nil then
+            yOffset = 0
+        end
+
         table.insert(self.layers, index, {
             layer = layer,
             scalingDelta = scalingDelta,
             xScrollCoefficient = xScrollCoefficient,
-            yScrollCoefficient = yScrollCoefficient
+            yScrollCoefficient = yScrollCoefficient,
+            xOffset = xOffset,
+            yOffset = yOffset
         })
     end
 
@@ -728,8 +738,8 @@ Engine.new = function(params)
                 local curLayerMeta = module.layers[i]
                 local curLayer = curLayerMeta.layer
                 -- Determine adjusted camera position
-                local adjustedCamY = camera.getY() * curLayerMeta.yScrollCoefficient
-                local adjustedCamX = camera.getX() * curLayerMeta.xScrollCoefficient
+                local adjustedCamY = camera.getY() * curLayerMeta.yScrollCoefficient + curLayerMeta.yOffset
+                local adjustedCamX = camera.getX() * curLayerMeta.xScrollCoefficient + curLayerMeta.xOffset
                 -- Localize current trimmed layer
                 local curTrimmedLayer = trimmedLayers[i]
                 curTrimmedLayer.adjustedCamY = adjustedCamY
@@ -872,7 +882,9 @@ Engine.new = function(params)
                                     local tileRow = tiles[row]
                                     if tileRow ~= nil then
                                         local tile = tileRow[col]
-                                        if tile ~= nil then
+                                        -- Check for nil tile is needed for corner cases where a corner would be added
+                                        -- by multiple handlers
+                                        if tile ~= nil and newRow[col] == nil then
                                             local newGroup = getTileDisplayObject(curLayer, tile, row, col)
                                             if newGroup ~= nil then
                                                 newGroup.x = (col - 1) * tileSize + halfTileSize
@@ -899,7 +911,9 @@ Engine.new = function(params)
                                     local tileRow = tiles[row]
                                     if tileRow ~= nil then
                                         local tile = tileRow[col]
-                                        if tile ~= nil then
+                                        -- Check for nil tile is needed for corner cases where a corner would be added
+                                        -- by multiple handlers
+                                        if tile ~= nil and newRow[col] == nil then
                                             local newGroup = getTileDisplayObject(curLayer, tile, row, col)
                                             if newGroup ~= nil then
                                                 newGroup.x = (col - 1) * tileSize + halfTileSize
@@ -926,7 +940,9 @@ Engine.new = function(params)
                                     local tileRow = tiles[row]
                                     if tileRow ~= nil then
                                         local tile = tileRow[col]
-                                        if tile ~= nil then
+                                        -- Check for nil tile is needed for corner cases where a corner would be added
+                                        -- by multiple handlers
+                                        if tile ~= nil and newRow[col] == nil then
                                             local newGroup = getTileDisplayObject(curLayer, tile, row, col)
                                             if newGroup ~= nil then
                                                 newGroup.x = (col - 1) * tileSize + halfTileSize
@@ -953,7 +969,9 @@ Engine.new = function(params)
                                     local tileRow = tiles[row]
                                     if tileRow ~= nil then
                                         local tile = tileRow[col]
-                                        if tile ~= nil then
+                                        -- Check for nil tile is needed for corner cases where a corner would be added
+                                        -- by multiple handlers
+                                        if tile ~= nil and newRow[col] == nil then
                                             local newGroup = getTileDisplayObject(curLayer, tile, row, col)
                                             if newGroup ~= nil then
                                                 newGroup.x = (col - 1) * tileSize + halfTileSize
