@@ -8,6 +8,8 @@ local requireParams = Utils.requireParams
 
 local SpriteInfo = {}
 
+
+-- Deprecated
 SpriteInfo.new = function(params)
 --    requireParams({"imageRect", "width", "height"}, params)
 
