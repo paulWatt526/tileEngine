@@ -100,6 +100,7 @@ BaseLayer.new = function(layerType)
 
     self.type = layerType
     self.displayGroup = display.newGroup()
+    self.displayGroup.isVisible = false
 
     function self.clear()
         error("Implement the layer clear function")
@@ -327,6 +328,10 @@ EntityLayer.new = function(params)
 
     function self.getEntityInfos()
         return entities
+    end
+
+    function self.getNonResourceEntities()
+        return nonResourceEntities
     end
 
     local parentDestroy = self.destroy
@@ -621,6 +626,9 @@ Engine.new = function(params)
         "hideOutOfSightElements"
     }, params)
 
+    local LIGHTING_MODE_APPLY_ALL = LayerConstants.LIGHTING_MODE_APPLY_ALL
+    local LIGHTING_MODE_AMBIENT_ONLY = LayerConstants.LIGHTING_MODE_AMBIENT_ONLY
+
     local self = {}
 
     local tileSize = params.tileSize
@@ -628,23 +636,24 @@ Engine.new = function(params)
     local hideOutOfSightElements = params.hideOutOfSightElements
     local compensateLightingForViewingPosition = params.compensateLightingForViewingPosition
     local spriteResolver = params.spriteResolver
+    local resolveSpriteForKey = spriteResolver.resolveForKey
     local modules = {}
     local activeModule
     local masterGroup = display.newGroup()
     local trimmedLayers
 
     local function getTileDisplayObject(layer, tile, row, col)
-        local newGroup = spriteResolver.resolveForKey(tile.resourceKey).imageRect
+        local newGroup = resolveSpriteForKey(tile.resourceKey).imageRect
         if newGroup ~= nil then
             local lineOfSightTransitionValue = activeModule.losModel.getLineOfSightTransitionValue(row, col)
             local layerLightingMode = layer.getLightingMode()
-            if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
+            if layerLightingMode == LIGHTING_MODE_APPLY_ALL then
                 local light = activeModule.lightingModel.getAggregateLight(row, col)
                 if light ~= nil then
                     newGroup:setFillColor(light.r, light.g, light.b)
                     newGroup.alpha = lineOfSightTransitionValue
                 end
-            elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
+            elseif layerLightingMode == LIGHTING_MODE_AMBIENT_ONLY then
                 local ambientLight = activeModule.lightingModel.getAmbientLight()
                 newGroup:setFillColor(ambientLight.r, ambientLight.g, ambientLight.b)
                 newGroup.alpha = lineOfSightTransitionValue
@@ -659,8 +668,9 @@ Engine.new = function(params)
     local function determineAbsoluteScalingForLayers(trimmedLayers, camera, module)
         -- Determine absolute scales up
         local curScale = 1
-        for i=camera.getLayer(),#module.layers do
-            if i == camera.getLayer() then
+        local cameraLayer = camera.getLayer()
+        for i=cameraLayer,#module.layers do
+            if i == cameraLayer then
                 curScale = 1
             else
                 curScale = curScale + module.layers[i].scalingDelta * camera.getZoom()
@@ -677,8 +687,8 @@ Engine.new = function(params)
 
         -- Determine absolute scales down
         local curScale = 1
-        for i=camera.getLayer(),1,-1 do
-            if i == camera.getLayer() then
+        for i=cameraLayer,1,-1 do
+            if i == cameraLayer then
                 curScale = 1
             else
                 curScale = curScale - module.layers[i].scalingDelta * camera.getZoom()
@@ -727,6 +737,7 @@ Engine.new = function(params)
         if isFirstRun then
             for i=1,#module.layers do
                 local layerGroup = module.layers[i].layer.displayGroup
+                layerGroup.isVisible = true
                 trimmedLayers[i].displayGroup = layerGroup
                 masterGroup:insert(layerGroup)
             end

@@ -3,6 +3,7 @@ local ObjectSystem = require "plugin.wattageTileEngine.objectSystem"
 local Utils = require "plugin.wattageTileEngine.utils"
 
 local min = math.min
+local sqrt = math.sqrt
 
 local AggregateLightTransitioner = {}
 AggregateLightTransitioner.new = function(params)
@@ -309,9 +310,9 @@ LightingModel.new = function(params)
 
     function self.getAmbientLight()
         return {
-            r = math.min(ambientRed * ambientIntensity, 1),
-            g = math.min(ambientGreen * ambientIntensity, 1),
-            b = math.min(ambientBlue * ambientIntensity, 1),
+            r = min(ambientRed * ambientIntensity, 1),
+            g = min(ambientGreen * ambientIntensity, 1),
+            b = min(ambientBlue * ambientIntensity, 1),
             intensity = ambientIntensity
         }
     end
@@ -426,14 +427,14 @@ LightingModel.new = function(params)
             local halfHeight = (maxRow - minRow) / 2
             local boundingCenterCol = minCol + halfWidth
             local boundingCenterRow = minRow + halfHeight
-            local boundingRadius = math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight)
+            local boundingRadius = sqrt(halfWidth * halfWidth + halfHeight * halfHeight)
 
             for lightId,area in pairs(affectedAreasByLightId) do
                 local light = lightsById[lightId]
                 local lightRadius = light.radius
                 local distanceRows = boundingCenterRow - light.row
                 local distanceCols = boundingCenterCol - light.column
-                local distance = math.sqrt(distanceRows * distanceRows + distanceCols * distanceCols)
+                local distance = sqrt(distanceRows * distanceRows + distanceCols * distanceCols)
                 if distance <= boundingRadius + lightRadius then
                     table.insert(trimmedAffectedAreas, {
                         light = light,
