@@ -93,13 +93,13 @@ local LAYER_TILE_SELECTION = 3
 local LayerConstants = {}
 LayerConstants.LIGHTING_MODE_APPLY_ALL = 0
 LayerConstants.LIGHTING_MODE_AMBIENT_ONLY = 1
+LayerConstants.LIGHTING_MODE_NONE = 2
 
 local BaseLayer = {}
 BaseLayer.new = function(layerType)
     local self = {}
 
-    local lightingMode = LayerConstants.LIGHTING_MODE_APPLY_ALL --Default
-
+    self.lightingMode = LayerConstants.LIGHTING_MODE_APPLY_ALL --Default
     self.type = layerType
     self.displayGroup = display.newGroup()
     self.displayGroup.isVisible = false
@@ -109,11 +109,11 @@ BaseLayer.new = function(layerType)
     end
 
     function self.setLightingMode(mode)
-        lightingMode = mode
+        self.lightingMode = mode
     end
 
     function self.getLightingMode()
-        return lightingMode
+        return self.lightingMode
     end
 
     function self.destroy()
@@ -630,6 +630,7 @@ Engine.new = function(params)
 
     local LIGHTING_MODE_APPLY_ALL = LayerConstants.LIGHTING_MODE_APPLY_ALL
     local LIGHTING_MODE_AMBIENT_ONLY = LayerConstants.LIGHTING_MODE_AMBIENT_ONLY
+    local LIGHTING_MODE_NONE = LayerConstants.LIGHTING_MODE_NONE
 
     local self = {}
 
@@ -648,7 +649,7 @@ Engine.new = function(params)
         local newGroup = resolveSpriteForKey(tile.resourceKey).imageRect
         if newGroup ~= nil then
             local lineOfSightTransitionValue = activeModule.losModel.getLineOfSightTransitionValue(row, col)
-            local layerLightingMode = layer.getLightingMode()
+            local layerLightingMode = layer.lightingMode
             if layerLightingMode == LIGHTING_MODE_APPLY_ALL then
                 local light = activeModule.lightingModel.getAggregateLight(row, col)
                 if light ~= nil then
@@ -659,7 +660,7 @@ Engine.new = function(params)
                 local ambientLight = activeModule.lightingModel.getAmbientLight()
                 newGroup:setFillColor(ambientLight.r, ambientLight.g, ambientLight.b)
                 newGroup.alpha = lineOfSightTransitionValue
-            else
+            elseif layerLightingMode ~= LIGHTING_MODE_NONE then
                 error "Unsupported lighting mode."
             end
         end
@@ -1008,14 +1009,14 @@ Engine.new = function(params)
                                     if rowArray ~= nil then
                                         local ambientChangeGroup = rowArray[ambientChangeCol]
                                         if ambientChangeGroup ~= nil then
-                                            local layerLightingMode = curLayer.getLightingMode()
+                                            local layerLightingMode = curLayer.lightingMode
                                             if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                                                 local light = activeModule.lightingModel.getAggregateLight(ambientChangeRow, ambientChangeCol)
                                                 ambientChangeGroup:setFillColor(light.r, light.g, light.b)
                                             elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                                                 local light = activeModule.lightingModel.getAmbientLight()
                                                 ambientChangeGroup:setFillColor(light.r, light.g, light.b)
-                                            else
+                                            elseif layerLightingMode ~= LIGHTING_MODE_NONE then
                                                 error "Unsupported lighting mode."
                                             end
                                         end
@@ -1034,14 +1035,14 @@ Engine.new = function(params)
                                 if rowArray ~= nil then
                                     local dirtyLitGroup = rowArray[dirtyLitColumn]
                                     if dirtyLitGroup ~= nil then
-                                        local layerLightingMode = curLayer.getLightingMode()
+                                        local layerLightingMode = curLayer.lightingMode
                                         if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                                             local light = activeModule.lightingModel.getAggregateLight(dirtyLitRow, dirtyLitColumn)
                                             dirtyLitGroup:setFillColor(light.r, light.g, light.b)
                                         elseif layerLightingMode == LayerConstants.LIGHTING_MODE_AMBIENT_ONLY then
                                             local light = activeModule.lightingModel.getAmbientLight()
                                             dirtyLitGroup:setFillColor(light.r, light.g, light.b)
-                                        else
+                                        elseif layerLightingMode ~= LIGHTING_MODE_NONE then
                                             error "Unsupported lighting mode."
                                         end
                                     end
@@ -1062,7 +1063,7 @@ Engine.new = function(params)
                                     if rowArray ~= nil then
                                         local group = rowArray[col]
                                         if group ~= nil then
-                                            local layerLightingMode = curLayer.getLightingMode()
+                                            local layerLightingMode = curLayer.lightingMode
                                             if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                                                 local light = activeModule.lightingModel.getAggregateLight(row, col)
                                                 group:setFillColor(light.r, light.g, light.b)
@@ -1071,7 +1072,7 @@ Engine.new = function(params)
                                                 local light = activeModule.lightingModel.getAmbientLight()
                                                 group:setFillColor(light.r, light.g, light.b)
                                                 group.alpha = 1
-                                            else
+                                            elseif layerLightingMode ~= LIGHTING_MODE_NONE then
                                                 error "Unsupported lighting mode."
                                             end
                                         end
@@ -1185,7 +1186,7 @@ Engine.new = function(params)
                     local row = floor(imageRect.y / tileSize) + 1
                     local column = floor(imageRect.x / tileSize) + 1
                     local lineOfSightTransitionValue = activeModule.losModel.getLineOfSightTransitionValue(row, column)
-                    local layerLightingMode = curLayer.getLightingMode()
+                    local layerLightingMode = curLayer.lightingMode
                     if layerLightingMode == LayerConstants.LIGHTING_MODE_APPLY_ALL then
                         local aggregateLight = activeModule.lightingModel.getAggregateLight(row, column)
                         imageRect:setFillColor(aggregateLight.r, aggregateLight.g, aggregateLight.b)
@@ -1194,7 +1195,7 @@ Engine.new = function(params)
                         local ambientLight = activeModule.lightingModel.getAmbientLight()
                         imageRect:setFillColor(ambientLight.r, ambientLight.g, ambientLight.b)
                         imageRect.alpha = lineOfSightTransitionValue
-                    else
+                    elseif layerLightingMode ~= LIGHTING_MODE_NONE then
                         error "Unsupported lighting mode."
                     end
                 end
