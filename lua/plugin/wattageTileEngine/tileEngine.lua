@@ -1170,6 +1170,7 @@ Engine.new = function(params)
                     curTrimmedLayer.visibleTilesInfo.maxRow = newMaxRow
                 end
             end
+            camera.setLayerDirty(false)
             camera.setZoomDirty(false)
             camera.setLocationDirty(false)
         end
