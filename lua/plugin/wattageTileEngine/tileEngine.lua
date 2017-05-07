@@ -855,28 +855,27 @@ Engine.new = function(params)
                         local dirtyTileCoordinates = curLayer.getDirtyTileCoordinates()
                         for i=1,#dirtyTileCoordinates do
                             local coordinate = dirtyTileCoordinates[i]
+                            local dirtyRow = coordinate.row
+                            local dirtyCol = coordinate.column
+                            local dirtyRowArray = visibleTileGroups[dirtyRow]
+                            if dirtyRowArray ~= nil and dirtyCol >= newMinCol and dirtyCol <= newMaxCol then
+                                local dirtyGroup = dirtyRowArray[dirtyCol]
+                                if dirtyGroup ~= nil then
+                                    dirtyRowArray[dirtyCol] = nil
+                                    dirtyGroup:removeSelf()
+                                end
 
-                            local dirtyRow = visibleTileGroups[coordinate.row]
-                            if dirtyRow == nil then
-                                dirtyRow = {}
-                            end
-
-                            local dirtyGroup = dirtyRow[coordinate.column]
-                            if dirtyGroup ~= nil then
-                                dirtyRow[coordinate.column] = nil
-                                dirtyGroup:removeSelf()
-                            end
-
-                            local newGroup
-                            local tile = tiles[coordinate.row][coordinate.column]
-                            if tile ~= nil then
-                                newGroup = getTileDisplayObject(curLayer, tile, coordinate.row, coordinate.column)
-                            end
-                            if newGroup ~= nil then
-                                newGroup.x = (coordinate.column - 1) * tileSize + halfTileSize
-                                newGroup.y = (coordinate.row - 1) * tileSize + halfTileSize
-                                dirtyRow[coordinate.column] = newGroup
-                                curTrimmedLayer.displayGroup:insert(newGroup)
+                                local newGroup
+                                local tile = tiles[dirtyRow][dirtyCol]
+                                if tile ~= nil then
+                                    newGroup = getTileDisplayObject(curLayer, tile, dirtyRow, dirtyCol)
+                                end
+                                if newGroup ~= nil then
+                                    newGroup.x = (dirtyCol - 1) * tileSize + halfTileSize
+                                    newGroup.y = (dirtyRow - 1) * tileSize + halfTileSize
+                                    dirtyRowArray[dirtyCol] = newGroup
+                                    curTrimmedLayer.displayGroup:insert(newGroup)
+                                end
                             end
                         end
                         --endregion
