@@ -17,6 +17,7 @@ lib.LightingModel = require "plugin.wattageTileEngine.lightingModel"
 lib.LineOfSightModel = require "plugin.wattageTileEngine.lineOfSightModel"
 lib.Module = TileEngineModule.Module
 lib.ObjectSystem = require "plugin.wattageTileEngine.objectSystem"
+lib.RegionManager = require "plugin.wattageTileEngine.regionManager"
 lib.SpriteInfo = TileEngineModule.SpriteInfo
 lib.Tile = TileEngineModule.Tile
 lib.TileLayer = TileEngineModule.Layer
