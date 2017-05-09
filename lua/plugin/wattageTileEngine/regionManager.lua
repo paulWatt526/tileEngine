@@ -41,6 +41,8 @@ Class.new = function(params)
     local activeRegionWidthInPoints     -- Width of the active region in points
     local activeRegionHeightInPoints    -- Height of the active region in points
     local subRegions            -- Stores the layer sub regions
+    local regionsHigh           -- Number of vertical regions in layer
+    local regionsWide           -- Number of horizontal regions in layer
 
     local floor = math.floor
 
@@ -127,6 +129,13 @@ Class.new = function(params)
                     end
                 end
             end
+        end
+
+        function self.destroy()
+            if regionData ~= nil then
+                listener.regionReleased(regionData)
+            end
+            regionData = nil
         end
 
         return self
@@ -240,14 +249,14 @@ Class.new = function(params)
         sprite.y = worldY - pointRowOffset + activeRegionRowOffsetInPoints
     end
 
-    --    function self.invalidateRegion(absoluteRegionRow, absoluteRegionCol)
-    -- Inform listener that the region is released
-    -- Clear cache for this region
-    --    end
-
-    --    function self.flushChanges()
-    --         It may be a better experience to provide a flush method to allow the developer to decide when changes are sent to the engine.
-    --    end
+    function self.destroy()
+        for subRegionRow=0,regionsHigh - 1 do
+            for subRegionCol=0,regionsWide - 1 do
+                subRegions[subRegionRow][subRegionCol].destroy()
+            end
+        end
+        subRegions = nil
+    end
 
     local function init()
         --region Validations
@@ -346,9 +355,12 @@ Class.new = function(params)
         activeRegionWidthInPoints = activeRegionsWidthInTiles * tileSize
         activeRegionHeightInPoints = activeRegionsHeightInTiles * tileSize
 
+        regionsHigh = regionHeight
+        regionsWide = regionWidth
+
         subRegions = {}
-        for row=0,regionHeight - 1 do
-            for col=0,regionWidth - 1 do
+        for row=0,regionsHigh - 1 do
+            for col=0,regionsWide - 1 do
                 local subRegionRow = subRegions[row]
                 if subRegionRow == nil then
                     subRegionRow = {}
