@@ -158,7 +158,7 @@ Class.new = function(params)
         if curLayerRegionRow ~= prevLayerRegionRow or curLayerRegionCol ~= prevLayerRegionCol then
             regionsCache.array = {}    -- invalidates the region cache
 
-            --region Shift entities
+            --region Shift resource and non-resource entities
             local layerRegionRowDelta = curLayerRegionRow - prevLayerRegionRow
             local layerRegionColDelta = curLayerRegionCol - prevLayerRegionCol
 
@@ -170,6 +170,12 @@ Class.new = function(params)
                     local sprite = info.imageRect
                     sprite.x = sprite.x + xOffset
                     sprite.y = sprite.y + yOffset
+                end
+
+                local nonResourceEntities = layer.getNonResourceEntities()
+                for entityId, entity in pairs(nonResourceEntities) do
+                    entity.x = entity.x + xOffset
+                    entity.y = entity.y + yOffset
                 end
             end
             --endregion
@@ -220,10 +226,13 @@ Class.new = function(params)
     end
 
     function self.centerEntityOnTile(entityLayerIndex, entityId, worldRow, worldColumn)
-        local layerRow = worldRow % activeRegionsHeightInTiles + activeRegionRowOffsetInTiles + 1
-        local layerCol = worldColumn % activeRegionsWidthInTiles + activeRegionColOffsetInTiles + 1
-        local entityLayer = entityLayersByIndex[entityLayerIndex]
-        entityLayer.centerEntityOnTile(entityId, layerRow, layerCol)
+        self.setEntityLocation(
+            entityLayerIndex, entityId, (worldColumn + 0.5) * tileSize, (worldRow + 0.5) * tileSize)
+    end
+
+    function self.centerNonResourceEntityOnTile(entityLayerIndex, entityId, worldRow, worldColumn)
+        self.setNonResourceEntityLocation(
+            entityLayerIndex, entityId, (worldColumn + 0.5) * tileSize, (worldRow + 0.5) * tileSize)
     end
 
     function self.getEntityLocation(entityLayerIndex, entityId)
@@ -238,9 +247,32 @@ Class.new = function(params)
         return x, y
     end
 
+    function self.getNonResourceEntityLocation(entityLayerIndex, entityId)
+        local entityLayer = entityLayersByIndex[entityLayerIndex]
+        local sprite = entityLayer.getNonResourceEntities()[entityId]
+        local curLayerRegionRow = floor(cameraWorldY / activeRegionsHeightInTiles)
+        local curLayerRegionCol = floor(cameraWorldX / activeRegionsWidthInTiles)
+        local pointRowOffset = curLayerRegionRow * activeRegionHeightInPoints
+        local pointColOffset = curLayerRegionCol * activeRegionWidthInPoints
+        local x = sprite.x - activeRegionColOffsetInPoints + pointColOffset
+        local y = sprite.y - activeRegionRowOffsetInPoints + pointRowOffset
+        return x, y
+    end
+
     function self.setEntityLocation(entityLayerIndex, entityId, worldX, worldY)
         local entityLayer = entityLayersByIndex[entityLayerIndex]
         local sprite = entityLayer.getEntityInfo(entityId).imageRect
+        local curLayerRegionRow = floor(cameraWorldY / activeRegionsHeightInTiles)
+        local curLayerRegionCol = floor(cameraWorldX / activeRegionsWidthInTiles)
+        local pointRowOffset = curLayerRegionRow * activeRegionHeightInPoints
+        local pointColOffset = curLayerRegionCol * activeRegionWidthInPoints
+        sprite.x = worldX - pointColOffset + activeRegionColOffsetInPoints
+        sprite.y = worldY - pointRowOffset + activeRegionRowOffsetInPoints
+    end
+
+    function self.setNonResourceEntityLocation(entityLayerIndex, entityId, worldX, worldY)
+        local entityLayer = entityLayersByIndex[entityLayerIndex]
+        local sprite = entityLayer.getNonResourceEntities()[entityId]
         local curLayerRegionRow = floor(cameraWorldY / activeRegionsHeightInTiles)
         local curLayerRegionCol = floor(cameraWorldX / activeRegionsWidthInTiles)
         local pointRowOffset = curLayerRegionRow * activeRegionHeightInPoints
