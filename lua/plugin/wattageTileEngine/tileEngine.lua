@@ -1285,6 +1285,22 @@ Engine.new = function(params)
         end
     end
 
+    -- pixel x,y assume origin at top left of viewport.
+    function self.getCoordinateAtPixelInLayer(camera, pixelX, pixelY, layerIndex)
+        -- Layer group has been adjusted based on its scrolling coefficients,
+        -- offset, scale, camera position, and camera zoom.  This is utilized
+        -- to determine the tile coordinate.
+        local trimmedLayer = trimmedLayers[layerIndex]
+        local layerGroup = trimmedLayer.displayGroup
+        local left = -layerGroup.x / layerGroup.xScale - (camera.pixelWidth / layerGroup.xScale / 2)
+        local top = -layerGroup.y / layerGroup.yScale - (camera.pixelHeight / layerGroup.yScale / 2)
+        local layerPixelX = left + pixelX / layerGroup.xScale
+        local layerPixelY = top + pixelY / layerGroup.yScale
+        local layerRow = layerPixelY / tileSize
+        local layerColumn = layerPixelX / tileSize
+        return layerRow, layerColumn
+    end
+
     function self.getMasterGroup()
         return masterGroup
     end

@@ -21,6 +21,13 @@ TileEngineViewControl.new = function(params)
         tileEngineInstance.render(camera)
     end
 
+    function self.getTileCoordinateAtContentXY(contentX, contentY, layerIndex)
+        local localX, localY = tileEngineInstance.getMasterGroup():contentToLocal(contentX, contentY)
+        localX = localX + camera.pixelWidth / 2
+        localY = localY + camera.pixelHeight / 2
+        return tileEngineInstance.getCoordinateAtPixelInLayer(camera, localX, localY, layerIndex)
+    end
+
     function self.destroy()
         if container ~= nil then
             container:removeSelf()
