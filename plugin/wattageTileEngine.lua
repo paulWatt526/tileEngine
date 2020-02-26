@@ -1,7 +1,5 @@
-local Library = require "CoronaLibrary"
-
 -- Create library
-local lib = Library:new{ name='plugin.wattageTileEngine', publisherId='com.blindprophetsoftware' }
+local lib = {}
 -------------------------------------------------------------------------------
 -- BEGIN (Insert your implementation starting here)
 -------------------------------------------------------------------------------

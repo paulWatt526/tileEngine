@@ -1,13 +1,3 @@
---
--- created with TexturePacker (http://www.codeandweb.com/texturepacker)
---
--- $TexturePacker:SmartUpdate:82e7fdcf46f55335e0f1d3d1c8f7a2cf:584532efb031556035292817a3f01ab9:f4492607ea55a754477543692c89a688$
---
--- local sheetInfo = require("mysheet")
--- local myImageSheet = graphics.newImageSheet( "mysheet.png", sheetInfo:getSheet() )
--- local sprite = display.newSprite( myImageSheet , {frames={sheetInfo:getFrameIndex("sprite")}} )
---
-
 local SheetInfo = {}
 
 SheetInfo.sheet =
